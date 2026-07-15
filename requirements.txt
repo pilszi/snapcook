@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+flask
+oracledb
+pandas
+matplotlib
+scikit-learn
+seaborn
+requests
+pyarrow
+beatifulsoap
