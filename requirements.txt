@@ -8,4 +8,5 @@ scikit-learn
 seaborn
 requests
 pyarrow
-beatifulsoap
+bs4
+selenium
