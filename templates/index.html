@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SnapCook</title>   
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div>
+        <div class="style_font">SnapCook</div>
+        <header>
+            <div>
+                <nav>
+                    <a href="/">
+                        <div class="hover_font">
+                            Home
+                        </div>
+                    </a>
+                </nav>
+            </div>
+        </header>
+        <h2>요리 목록</h2>
+        <form action="/snapcook">
+            <!-- <input type="file" name="file" id="file_upload" value="upload"> -->
+            <input type="text" name="ing" value="egg">
+            <input type="submit" value="전송">
+        </form>
+        <div>
+            {% if result %}
+            <p>입력한 재료 : {{ ing }}</p>
+            {% else %}
+            <p>입력 실패</p>
+            {% endif %}
+        </div>
+        <hr>
+        <table border="1" style="border-collapse: collapse;">
+            {% if result %}
+            {% for i in range(0, result[0]|length)%}
+            <tr onclick="location.href='/recipe/detail?ids={{ result[2][i] }}'" class="hover-row">
+                <th style="border-right: 0px;">
+                    {{ result[0][i] }}
+                </th>
+                <td style="border-left: 0px;"><img src="{{ result[1][i] }}" height="200"></td>      
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </table>
+        <div>
+        </div>
+    </div>
+</body>
+</html>

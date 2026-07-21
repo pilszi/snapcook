@@ -1,0 +1,55 @@
+/* static/css/style.css */
+
+.hover-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.hover-row:hover {
+    background-color: aqua;
+}
+
+.hover-row:hover th,
+.hover-row:hover td {
+    background-color: aqua;
+}
+
+.hover-row td {
+    padding: 0;
+    vertical-align: middle;
+}
+
+.hover-row td img {
+    display: block;
+    width: auto; /* 비율 유지 */
+}
+
+td{
+    padding: 0;
+    vertical-align: middle;
+}
+
+td img{
+    display: block;
+    width: auto;
+}
+
+td hr{
+    margin-left: 5px;
+    width: 50px;
+}
+
+.style_font{
+    font-size: 40px;
+}
+
+.hover_font{
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 50px;
+    font-size: larger;
+}
+
+.hover_font:hover{
+    background-color: aqua;
+}

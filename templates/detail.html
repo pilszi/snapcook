@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>SnapCook_datail</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
+    <body>
+        <div>
+            <div class="style_font">SnapCook</div>
+            <header>
+                <div>
+                    <nav>
+                        <a href="/">
+                            <div class="hover_font">
+                                Home
+                            </div>
+                        </a>
+                    </nav>
+                </div>
+            </header>
+            {% if food %}
+            <h2>{{ food[0] }} 레시피 상세보기</h2>
+            <br>
+            <div>
+                <img src="{{ food[1] }}" width="400">
+            </div>
+            {% endif %}
+            {% if result %}
+            <div>
+                <p style="font-size: 30px;">재료</p>
+                <table>
+                    {% for i in range(0, result[0]|length) %}
+                    <tr>
+                        <td style="border: none; border-bottom: 1px solid #ccc;">{{ result[0][i] }}&nbsp;</td>
+                        <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;{{ result[1][i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <hr>
+            <div>
+                <p style="font-size: 30px;">요리 순서</p>
+                <table>
+                    {% for i in range(0, result[2]|length) %}
+                    <tr>
+                        <td style="border-right: 0px;"><img src="{{ result[4][i] }}" height="200"></td>
+                        <td style="border: none; border-bottom: 1px solid #ccc;">
+                            &nbsp;{{ result[2][i] }}<hr>
+                            &nbsp;{{ result[3][i] }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </body>

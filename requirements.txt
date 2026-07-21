@@ -10,3 +10,4 @@ requests
 pyarrow
 bs4
 selenium
+ultralytics

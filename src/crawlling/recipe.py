@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(parent_dir))
 from bs4 import BeautifulSoup
 import requests
 import json
-from db import connect
+from static.oracle.db import connect
 import time
 
 conn = connect()

@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from starlette.responses import RedirectResponse
 from selenium import webdriver
 import time
-from db import connect
+from static.oracle.db import connect
 
 
 url = "https://wtable.co.kr/recipes"
