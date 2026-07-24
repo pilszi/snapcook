@@ -1,37 +1,31 @@
 from fastapi import FastAPI
 
 from static.oracle.db import connect
+from src.job.detect_yolo import detect_img
+from src.job.search_db import detect_foods, ing_names
 
 app = FastAPI()
 
 
-@app.get('/snapcook')
-def snapcook(ing:str):
+@app.get('/yolo/detection')
+def detection(file:str):
 
-    conn = connect()
-    cur = conn.cursor()
+    det_class = detect_img(file)
+    # print(det_class)
+    print(det_class)
+    kor_class = [ing_names[x] for x in det_class]
+    
+    return kor_class
 
-    sql_a = """
-        SELECT
-            f.id,
-            f.name as food_name,
-            f.image as food_img,
-            i.name
-        FROM ing_name ig JOIN ingredients i ON ig.ing_id=i.id
-            JOIN basic_ingredients b ON b.ingredient_id= i.id
-            JOIN food f ON f.id= b.food_id
-            WHERE ig.en_name=:ing AND f.name LIKE '%' || i.name || '%'
-    """
-    cur.execute(sql_a, {'ing': ing})
-    rows = cur.fetchall()
-    print(len(rows))
-    ids = [row[0] for row in rows]
-    title = [row[1] for row in rows]
-    img = [row[2] for row in rows]
-    result = [title, img, ids]
-    ing_kr = rows[0][3]
 
-    return {'result': result, 'ing': ing_kr}
+@app.post('/snapcook')
+def snapcook(data:dict):
+    print('='*60)
+    print(data['class'])
+    res = detect_foods(data['class'])
+    
+    return res
+
 
 @app.get('/recipe/detail')
 def detail(id:int):

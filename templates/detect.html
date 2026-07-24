@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>SnapCook_datail</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
+    <body>
+        <div>
+            <div class="style_font">SnapCook</div>
+            <header>
+                <div>
+                    <nav>
+                        <div>
+                            <a href="/">
+                                <p  class="hover_font">Home</p>
+                            </a>
+                        </div>
+                    </nav>
+                </div>
+            </header>
+        </div>
+        <p>객체 탐지</p>
+        <div>
+            <table>
+                <tr>
+                    <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 대상</td>
+                    <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 결과</td>
+                </tr>
+                <tr>
+                {% if file %}
+                    <td style="border: none; border-bottom: 1px solid #ccc;">
+                        <img src="{{ url_for('static', filename='upload/'+file+'.jpg') }}" height="400">
+                    </td>
+                    <td style="border: none; border-bottom: 1px solid #ccc;">
+                        <img src="{{ url_for('static', filename='result/res_'+file+'.jpg') }}" height="400">
+                    </td>
+                {% endif %}
+                </tr>
+                {% if detect %}
+                <tr>
+                    <td colspan="2">
+                        &nbsp;탐지된 재료 : 
+                        &nbsp;{{ detect | join(', ') }}
+                    </td>
+                    {% endif %}
+                </table>
+            <div >        
+                <table id="detect">
+                </table>
+                <div>
+            </div>
+        </div>
+    </body>
+    <script>
+        const detect_class = {{ detect | tojson }};
+        // document.getElementById('detect').innerText = detect_class;
+
+        async function snapcook() {
+            response = await fetch('/api/snapcook', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({class: detect_class})
+            });
+            data = await response.json();
+            console.log(data);
+
+            titles = data.result[0];
+            imgs = data.result[1];
+            ids = data.result[2];
+            detect_area = document.getElementById('detect');
+            detect_area.innerHTML = '';
+            const html = titles.map((title, i) =>{
+                const img = imgs[i];
+                const id = ids[i];
+
+                return `
+                    <a href="/recipe/detail?id=${id}" class="hover-row">
+                        <div class="menu-item" style="display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee;">
+                            <img src="${img}" alt="${title}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <h4 style="margin: 0 0 5px 0;">${title}</h4>
+                            </div>
+                        </div>
+                    </a>
+                `
+            }).join('');
+            detect_area.innerHTML = html;
+        }
+
+
+        // DOM이 로드되면 자동으로 5번 단계 실행
+        document.addEventListener('DOMContentLoaded', snapcook);
+
+    </script>
+</html>
