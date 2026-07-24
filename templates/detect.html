@@ -43,7 +43,12 @@
                         &nbsp;탐지된 재료 : 
                         &nbsp;{{ detect | join(', ') }}
                     </td>
-                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2">탐지된 재료 없음</td>
+                </tr>
+                {% endif %}
                 </table>
             <div >        
                 <table id="detect">
@@ -54,8 +59,10 @@
     </body>
     <script>
         const detect_class = {{ detect | tojson }};
-        // document.getElementById('detect').innerText = detect_class;
+        console.log(detect_class);
 
+        const detect_area = document.getElementById('detect');
+        
         async function snapcook() {
             response = await fetch('/api/snapcook', {
                 method: 'POST',
@@ -70,7 +77,7 @@
             titles = data.result[0];
             imgs = data.result[1];
             ids = data.result[2];
-            detect_area = document.getElementById('detect');
+            
             detect_area.innerHTML = '';
             const html = titles.map((title, i) =>{
                 const img = imgs[i];
@@ -88,11 +95,13 @@
                 `
             }).join('');
             detect_area.innerHTML = html;
-        }
-
+        };
+        
 
         // DOM이 로드되면 자동으로 5번 단계 실행
-        document.addEventListener('DOMContentLoaded', snapcook);
+        if (detect_class.length > 0){
+            document.addEventListener('DOMContentLoaded', snapcook);
+        };
 
     </script>
 </html>

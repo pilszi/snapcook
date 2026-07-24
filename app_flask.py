@@ -58,8 +58,6 @@ def api_snapcook():
     return {'result': result}
 
 
-# -------------------  진행 중  ---------------------
-
 @app.route('/recipe/detail', methods=['GET'])
 def recipe_detail():
     id = request.args.get('id')
@@ -74,6 +72,7 @@ def recipe_detail():
                            result = res,
                            food = food_res)
 
+# -------------------  진행 중  ---------------------
 
 
 
