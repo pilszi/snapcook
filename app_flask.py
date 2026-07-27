@@ -20,6 +20,10 @@ def file_split(filename):
 def index():
     return render_template("index.html")
 
+@app.route('/main')
+def main():
+    return render_template("main.html")
+
 
 @app.route('/snapcook', methods=['POST'])
 def snapcook():

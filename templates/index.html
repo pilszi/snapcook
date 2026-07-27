@@ -1,157 +1,47 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>SnapCook</title>   
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <div>
-        <div>
-            <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
-            <header>
-                <div>
-                    <nav>
-                        <div>
-                            <a href="/" class="nav_link">Home</a>
-                            {% if filename %}
-                            <a href="/yolo/detection?file={{ filename }}" class="nav_link">Detection</a>
-                            {% endif %}
-                        </div>
-                    </nav>
-                </div>
-            </header>
-        </div>
-        <div>
-            <h2>요리 목록</h2>
-            {% if not filename %}
-            <form action="/snapcook" method="post"enctype="multipart/form-data">
-                <input type="file" name="file">
-                <input type="submit" value="전송">
-            </form>
-            {% endif %}
-        </div>
-        <div>
-            {% if filename %}
-            <div>
-                <img src="{{ url_for('static', filename='result/res_'+filename+'.jpg') }}" height="400">
-            </div>
-                {% if detect %}
-                <div style="padding-bottom: 10px;">
-                    &nbsp;탐지된 재료 : {{ detect | join(', ') }}
-                </div>
-                {% else %}
-                <div style="padding-bottom: 10px;">
-                    &nbsp; 탐지된 재료 없음
-                </div>
-                {% endif %}
-
-            <div id="detect">
-            </div>
-                
-            {% elif file %}
-            <div>
-                <img src="{{ url_for('static', filename='upload/'+file+'.jpg') }}" height="400">
-            </div>
-            <div>
-                <button onclick="location.href='/yolo/detection?file={{file}}'">탐지 시작</button>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</body>
-<script>
-    // 변수 선언
-    const detect_class = {{ (detect | default([])) | tojson }};
-    console.log(detect_class);
-    const filename = {{ (filename | default([])) | tojson }}; 
-    console.log(filename);
-    const detect_area = document.getElementById('detect');
-    let allTitles = [], allImgs = [], allIds = [];
-    let currentIndex = 0;       // 현재까지 화면에 노출된 항목 수
-    const ITEMS_PER_PAGE = 10;  // 한 번에 불러올 개수
-    let isLoading = false;       // 스크롤 중복 호출 방지 플래그
-
-    async function snapcook() {
-        try {
-            const response = await fetch('/api/snapcook', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({class: detect_class})
-            });
-            const data = await response.json();
-            console.log(data);
-
-            allTitles = data.result[0] || [];
-            allImgs = data.result[1] || [];
-            allIds = data.result[2] || [];
-
-            detect_area.innerHTML = '';
-            currentIndex = 0;
-
-            // 처음 15개 렌더링
-            renderNextBatch();
-
-            // 스크롤 이벤트 등록
-            window.addEventListener('scroll', handleScroll);
-        } catch (error) {
-            console.error('데이터를 불러오는 중 오류 발생:', error);
-        }
-    }
-
-    // 15개씩 받아와서 화면에 추가(append)하는 함수
-    function renderNextBatch() {
-        if (currentIndex >= allTitles.length) return;
-
-        const nextIndex = currentIndex + ITEMS_PER_PAGE;
-        const sliceTitles = allTitles.slice(currentIndex, nextIndex);
-
-        const html = sliceTitles.map((title, i) => {
-            const actualIndex = currentIndex + i;
-            const img = allImgs[actualIndex];
-            const id = allIds[actualIndex];
-
-            return `
-                <a href="/recipe/detail?id=${id}&file=${filename}" class="hover-row">
-                    <div class="menu-item">
-                        <img src="${img}" alt="${title}">
-                        <div>
-                            <h4 style="margin: 0 0 5px 0;">${title}</h4>
-                        </div>
-                    </div>
-                </a>
-            `;
-        }).join('');
-
-        // 기존 내역 지우지 않고 하단에 덧붙이기
-        detect_area.insertAdjacentHTML('beforeend', html);
-        currentIndex = nextIndex;
-        isLoading = false;
-    }
-
-    // 스크롤 감지 함수
-    function handleScroll() {
-        if (isLoading) return;
-
-        // 페이지 맨 아래 근처(100px 전)까지 스크롤했는지 확인
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-
-        if (scrollTop + windowHeight >= documentHeight - 100) {
-            if (currentIndex < allTitles.length) {
-                isLoading = true;
-                renderNextBatch();
+    <head>
+        <meta charset="UTF-8">
+        <title>SnapCook</title>   
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <style>
+            #start {
+                display: block; /* 배경색과 패딩이 제대로 적용되도록 설정 */
+                text-align: center;
+                text-decoration: none;
+                font-size: 50px;
+                font-weight: bold;     /* h2 대신 글자를 굵게 처리 */
+                color: #2b5797;
+                padding: 10px 20px;    /* 버튼 느낌이 나도록 여백 추가 */
+                border-radius: 8px;    /* 모서리 라운딩 (선택) */
+                transition: all 0.2s ease;
+                margin-top: 20px;
+                width: 400px;          /* 버튼의 너비 지정 */
+                margin: 20px auto 0;
             }
-        }
-    }
-
-    // DOM 로드 시 실행
-    if (detect_class && detect_class.length > 0) {
-        document.addEventListener('DOMContentLoaded', snapcook);
-    }
-
-</script>
+            
+            #start:hover {
+                background-color: #2b5797;
+                color: #eee;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <div>
+                <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
+                <header>
+                    <div>
+                        <nav>
+                        </nav>
+                    </div>
+                </header>
+            </div>
+            <div>
+                <a id="start" href="/main">
+                    SnapCook 시작!
+                </a>
+            </div>
+        </div>
+    </body>
 </html>
