@@ -6,9 +6,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-upload_path = './static/upload'
-result_path = "./static/result"
-model_path = "./model/v9_best.pt"
+upload_path = 'static/upload'
+result_path = "static/result"
+model_path = "model/v9_best.pt"
 
 PATH = [upload_path, result_path]
 for path in PATH:
@@ -22,9 +22,10 @@ def detect_img(file):
     model = YOLO(model_path)
     print(file)
     img_path = f'{upload_path}/{file}.jpg'
+    print(img_path)
     img = cv2.imread(img_path)
 
-    result = model.predict(source=img, conf=0.1)
+    result = model.predict(source=img_path, conf=0.1)
 
     names = result[0].names
     print(names)

@@ -41,8 +41,8 @@ def yolo_detection():
     result = response.json()
     # print(result)
 
-    return render_template('detect.html',
-                           file = filename,
+    return render_template('index.html',
+                           filename = filename,
                            detect = result)
 
 
@@ -54,14 +54,15 @@ def api_snapcook():
     print(data)
     response = requests.post(f'{url}/snapcook', json={'class': data})
     result = response.json()
-    print(result)
+    print(f'추천 요리 갯수 : {len(result)}')
+
     return {'result': result}
 
 
 @app.route('/recipe/detail', methods=['GET'])
 def recipe_detail():
     id = request.args.get('id')
-    
+    filename = request.args.get('file')
     response = requests.get(f'{url}/recipe/detail?id={id}')
     result = response.json()
     print(result)
@@ -69,6 +70,7 @@ def recipe_detail():
     food_res = result['food']
 
     return render_template('detail.html',
+                           filename = filename,
                            result = res,
                            food = food_res)
 

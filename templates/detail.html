@@ -7,20 +7,23 @@
     </head>
     <body>
         <div>
-            <div class="style_font">SnapCook</div>
-            <header>
-                <div>
-                    <nav>
-                        <a href="/">
-                            <div class="hover_font">
-                                Home
+            <div>
+                <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
+                <header>
+                    <div>
+                        <nav>
+                            <div>
+                                <a href="/" class="nav_link">Home</a>
+                                {% if filename %}
+                                <a href="/yolo/detection?file={{ filename }}" class="nav_link">Detection</a>
+                                {% endif %}
                             </div>
-                        </a>
-                    </nav>
-                </div>
-            </header>
+                        </nav>
+                    </div>
+                </header>
+            </div>
             {% if food %}
-            <h2>{{ food[0] }} 레시피 상세보기</h2>
+            <h2>{{ food[0] }} 레시피</h2>
             <br>
             <div>
                 <img src="{{ food[1] }}" width="400">
@@ -38,13 +41,12 @@
                     {% endfor %}
                 </table>
             </div>
-            <hr>
             <div>
                 <p style="font-size: 30px;">요리 순서</p>
                 <table>
                     {% for i in range(0, result[2]|length) %}
                     <tr>
-                        <td style="border-right: 0px;"><img src="{{ result[4][i] }}" height="200"></td>
+                        <td style="border-right: 0px;"><img src="{{ result[4][i] }}" style="border-radius: 8px;" height="200"></td>
                         <td style="border: none; border-bottom: 1px solid #ccc;">
                             &nbsp;{{ result[2][i] }}<hr>
                             &nbsp;{{ result[3][i] }}
@@ -56,3 +58,7 @@
             {% endif %}
         </div>
     </body>
+    <script>
+        const filename = {{ filename | tojson }};
+    </script>
+</html>

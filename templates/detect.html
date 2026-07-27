@@ -7,101 +7,148 @@
     </head>
     <body>
         <div>
-            <div class="style_font">SnapCook</div>
-            <header>
-                <div>
-                    <nav>
-                        <div>
-                            <a href="/">
-                                <p  class="hover_font">Home</p>
-                            </a>
-                        </div>
-                    </nav>
+            <div>
+                <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
+                <header>
+                    <div>
+                        <nav>
+                            <div>
+                                <a href="/" class="nav_link">Home</a>
+                                {% if filename %}
+                                <a href="/yolo/detection?file={{ filename }}" class="nav_link">Detection</a>
+                                {% endif %}
+                            </div>
+                        </nav>
+                    </div>
+                </header>
+            </div>
+            <p>객체 탐지</p>
+            <div>
+                <table>
+                    <tr>
+                        <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 대상</td>
+                        <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 결과</td>
+                    </tr>
+                    <tr>
+                        {% if filename %}
+                        <td style="border: none; border-bottom: 1px solid #ccc;">
+                            <img src="{{ url_for('static', filename='upload/'+filename+'.jpg') }}" height="400">
+                        </td>
+                        <td style="border: none; border-bottom: 1px solid #ccc;">
+                            <img src="{{ url_for('static', filename='result/res_'+filename+'.jpg') }}" height="400">
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% if detect %}
+                    <tr>
+                        <td colspan="2">
+                            &nbsp;탐지된 재료 : 
+                            &nbsp;{{ detect | join(', ') }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2">탐지된 재료 없음</td>
+                    </tr>
+                    {% endif %}
+                </table>
+                <div id="detect">
                 </div>
-            </header>
-        </div>
-        <p>객체 탐지</p>
-        <div>
-            <table>
-                <tr>
-                    <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 대상</td>
-                    <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 결과</td>
-                </tr>
-                <tr>
-                {% if file %}
-                    <td style="border: none; border-bottom: 1px solid #ccc;">
-                        <img src="{{ url_for('static', filename='upload/'+file+'.jpg') }}" height="400">
-                    </td>
-                    <td style="border: none; border-bottom: 1px solid #ccc;">
-                        <img src="{{ url_for('static', filename='result/res_'+file+'.jpg') }}" height="400">
-                    </td>
-                {% endif %}
-                </tr>
-                {% if detect %}
-                <tr>
-                    <td colspan="2">
-                        &nbsp;탐지된 재료 : 
-                        &nbsp;{{ detect | join(', ') }}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="2">탐지된 재료 없음</td>
-                </tr>
-                {% endif %}
-                </table>
-            <div >        
-                <table id="detect">
-                </table>
-                <div>
             </div>
         </div>
     </body>
     <script>
+        // 변수 선언
         const detect_class = {{ detect | tojson }};
         console.log(detect_class);
-
+        const filename = {{ filename | tojson }}; 
+        console.log(filename);
         const detect_area = document.getElementById('detect');
-        
-        async function snapcook() {
-            response = await fetch('/api/snapcook', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({class: detect_class})
-            });
-            data = await response.json();
-            console.log(data);
+        let allTitles = [], allImgs = [], allIds = [];
+        let currentIndex = 0;       // 현재까지 화면에 노출된 항목 수
+        const ITEMS_PER_PAGE = 10;  // 한 번에 불러올 개수
+        let isLoading = false;       // 스크롤 중복 호출 방지 플래그
 
-            titles = data.result[0];
-            imgs = data.result[1];
-            ids = data.result[2];
-            
-            detect_area.innerHTML = '';
-            const html = titles.map((title, i) =>{
-                const img = imgs[i];
-                const id = ids[i];
+        async function snapcook() {
+            try {
+                const response = await fetch('/api/snapcook', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({class: detect_class})
+                });
+                const data = await response.json();
+                console.log(data);
+
+                allTitles = data.result[0] || [];
+                allImgs = data.result[1] || [];
+                allIds = data.result[2] || [];
+
+                detect_area.innerHTML = '';
+                currentIndex = 0;
+
+                // 처음 15개 렌더링
+                renderNextBatch();
+
+                // 스크롤 이벤트 등록
+                window.addEventListener('scroll', handleScroll);
+            } catch (error) {
+                console.error('데이터를 불러오는 중 오류 발생:', error);
+            }
+        }
+
+        // 15개씩 받아와서 화면에 추가(append)하는 함수
+        function renderNextBatch() {
+            if (currentIndex >= allTitles.length) return;
+
+            const nextIndex = currentIndex + ITEMS_PER_PAGE;
+            const sliceTitles = allTitles.slice(currentIndex, nextIndex);
+
+            const html = sliceTitles.map((title, i) => {
+                const actualIndex = currentIndex + i;
+                const img = allImgs[actualIndex];
+                const id = allIds[actualIndex];
 
                 return `
-                    <a href="/recipe/detail?id=${id}" class="hover-row">
-                        <div class="menu-item" style="display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee;">
-                            <img src="${img}" alt="${title}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px;">
+                    <a href="/recipe/detail?id=${id}&file=${filename}" class="hover-row">
+                        <div class="menu-item">
+                            <img src="${img}" alt="${title}">
                             <div>
                                 <h4 style="margin: 0 0 5px 0;">${title}</h4>
                             </div>
                         </div>
                     </a>
-                `
+                `;
             }).join('');
-            detect_area.innerHTML = html;
-        };
-        
 
-        // DOM이 로드되면 자동으로 5번 단계 실행
-        if (detect_class.length > 0){
+            // 기존 내역 지우지 않고 하단에 덧붙이기
+            detect_area.insertAdjacentHTML('beforeend', html);
+            currentIndex = nextIndex;
+            isLoading = false;
+        }
+
+        // 스크롤 감지 함수
+        function handleScroll() {
+            if (isLoading) return;
+
+            // 페이지 맨 아래 근처(100px 전)까지 스크롤했는지 확인
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+
+            if (scrollTop + windowHeight >= documentHeight - 100) {
+                if (currentIndex < allTitles.length) {
+                    isLoading = true;
+                    renderNextBatch();
+                }
+            }
+        }
+
+        // DOM 로드 시 실행
+        if (detect_class && detect_class.length > 0) {
             document.addEventListener('DOMContentLoaded', snapcook);
-        };
+        }
 
     </script>
 </html>

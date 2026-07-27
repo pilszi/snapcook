@@ -3,20 +3,12 @@
 .hover-row {
     cursor: pointer;
     transition: background-color 0.2s ease;
+    text-decoration: none;
+    color: black;
 }
 
 .hover-row:hover {
     background-color: aqua;
-}
-
-.hover-row:hover th,
-.hover-row:hover td {
-    background-color: aqua;
-}
-
-.hover-row td {
-    padding: 0;
-    vertical-align: middle;
 }
 
 .hover-row td img {
@@ -24,32 +16,54 @@
     width: auto; /* 비율 유지 */
 }
 
-td{
+td {
     padding: 0;
     vertical-align: middle;
 }
 
-td img{
+td img {
     display: block;
     width: auto;
 }
 
-td hr{
+td hr {
     margin-left: 5px;
     width: 50px;
 }
 
-.style_font{
-    font-size: 40px;
-}
-
-.hover_font{
+.nav_link {
+    display: inline-block;
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    width: 50px;
+    transition: all 0.2s ease;
+    width: 100px;
     font-size: larger;
+    color: #eee;
+    text-align: center;
+    text-decoration: none;
+    background-color: #2b5797;
+    padding: 8px 12px;
+    border-radius: 8px;
 }
 
-.hover_font:hover{
-    background-color: aqua;
+.nav_link:hover {
+    background-color: #ccc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: black;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    width: 500px;
+}
+
+.menu-item img {
+    width: 70px;
+    height: 70;
+    object-fit: cover;
+    border-radius: 8px;
 }
