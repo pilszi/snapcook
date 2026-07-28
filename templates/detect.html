@@ -2,56 +2,41 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SnapCook_datail</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <style>
+            /* 중앙 정렬 및 여백 주기 */
+            html, body {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden; /* 가로 스크롤/짤림 완벽 방지 */
+                box-sizing: border-box;
+                font-family: sans-serif;
+            }
+        </style>
     </head>
     <body>
         <div>
             <div>
-                <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
+                <div style="font-size: 40px; padding-bottom: 10px; text-align: center;">&nbsp;SnapCook</div>
                 <header>
                     <div>
                         <nav>
-                            <div>
+                            <div class="nav-container">
                                 <a href="/" class="nav_link">Home</a>
                                 {% if filename %}
-                                <a href="/yolo/detection?file={{ filename }}" class="nav_link">Detection</a>
+                                <a href="#" class="nav_link" onclick="goDetect()">Detection</a>
                                 {% endif %}
                             </div>
                         </nav>
                     </div>
                 </header>
             </div>
-            <p>객체 탐지</p>
             <div>
-                <table>
-                    <tr>
-                        <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 대상</td>
-                        <td style="border: none; border-bottom: 1px solid #ccc;">&nbsp;탐지 결과</td>
-                    </tr>
-                    <tr>
-                        {% if filename %}
-                        <td style="border: none; border-bottom: 1px solid #ccc;">
-                            <img src="{{ url_for('static', filename='upload/'+filename+'.jpg') }}" height="400">
-                        </td>
-                        <td style="border: none; border-bottom: 1px solid #ccc;">
-                            <img src="{{ url_for('static', filename='result/res_'+filename+'.jpg') }}" height="400">
-                        </td>
-                        {% endif %}
-                    </tr>
-                    {% if detect %}
-                    <tr>
-                        <td colspan="2">
-                            &nbsp;탐지된 재료 : 
-                            &nbsp;{{ detect | join(', ') }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="2">탐지된 재료 없음</td>
-                    </tr>
-                    {% endif %}
-                </table>
+                <p id="length" style="font-size: 20px;"></p>
                 <div id="detect">
                 </div>
             </div>
@@ -61,7 +46,7 @@
         // 변수 선언
         const detect_class = {{ detect | tojson }};
         console.log(detect_class);
-        const filename = {{ filename | tojson }}; 
+        const filename = {{ filename | tojson }};
         console.log(filename);
         const detect_area = document.getElementById('detect');
         let allTitles = [], allImgs = [], allIds = [];
@@ -85,6 +70,7 @@
                 allImgs = data.result[1] || [];
                 allIds = data.result[2] || [];
 
+                document.getElementById('length').innerHTML = `&nbsp;&nbsp;총 ${allIds.length}개의 레시피`;
                 detect_area.innerHTML = '';
                 currentIndex = 0;
 
@@ -111,7 +97,7 @@
                 const id = allIds[actualIndex];
 
                 return `
-                    <a href="/recipe/detail?id=${id}&file=${filename}" class="hover-row">
+                    <a href="/recipe/detail?id=${id}&file=${filename}&cls=${detect_class}" class="hover-row">
                         <div class="menu-item">
                             <img src="${img}" alt="${title}">
                             <div>
@@ -143,6 +129,32 @@
                     renderNextBatch();
                 }
             }
+        }
+
+        function goDetect(){
+            cls = detect_class;
+            file = filename;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/detect';
+
+            // cls 파라미터 추가
+            const inputCls = document.createElement('input');
+            inputCls.type = 'hidden';
+            inputCls.name = 'cls';
+            inputCls.value = cls;
+            form.appendChild(inputCls);
+
+            // file 파라미터 추가
+            const inputFile = document.createElement('input');
+            inputFile.type = 'hidden';
+            inputFile.name = 'file';
+            inputFile.value = file;
+            form.appendChild(inputFile);
+
+            // 폼 제출
+            document.body.appendChild(form);
+            form.submit();
         }
 
         // DOM 로드 시 실행

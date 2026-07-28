@@ -2,20 +2,50 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SnapCook</title>   
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* 중앙 정렬 및 여백 주기 */
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* 가로 스크롤/짤림 완벽 방지 */
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+        /* 요소들이 화면 너비를 넘지 않도록 설정 */
+        video, img, button {
+            max-width: 500px;
+            box-sizing: border-box;
+            margin: 10px auto;
+            display: block;
+        }
+        button {
+            padding: 15px; 
+            font-size: 15px; 
+            font-weight: bold;
+            border: none; 
+            border-radius: 8px; 
+            margin: 10px auto;
+            cursor: pointer;
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <div>
         <div>
-            <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
+            <div style="font-size: 40px; padding-bottom: 10px; text-align: center;">&nbsp;SnapCook</div>
             <header>
                 <div>
                     <nav>
-                        <div>
-                            <a href="/" class="nav_link">Home</a>
+                        <div class="nav-container">
+                            &nbsp;<a href="/" class="nav_link">Home</a>
                             {% if filename %}
-                            <a href="/yolo/detection?file={{ filename }}" class="nav_link">Detection</a>
+                            &nbsp;&nbsp;<a href="#" class="nav_link" onclick="goDetect()">Detection</a>
                             {% endif %}
                         </div>
                     </nav>
@@ -23,135 +53,121 @@
             </header>
         </div>
         <div>
-            <h2>요리 목록</h2>
-            {% if not filename %}
-            <form action="/snapcook" method="post"enctype="multipart/form-data">
-                <input type="file" name="file">
-                <input type="submit" value="전송">
-            </form>
-            {% endif %}
-        </div>
-        <div>
-            {% if filename %}
-            <div>
-                <img src="{{ url_for('static', filename='result/res_'+filename+'.jpg') }}" height="400">
+            <div id="det_item">
+                <video id="webcam" autoplay playsinline width="400" height="300" style="border: 1px solid #ccc;"></video>
+                <br><br>
+                <button type="button" onclick="captureAndUpload()">📸 사진 촬영 및 저장</button>
             </div>
-                {% if detect %}
-                <div style="padding-bottom: 10px;">
-                    &nbsp;탐지된 재료 : {{ detect | join(', ') }}
-                </div>
-                {% else %}
-                <div style="padding-bottom: 10px;">
-                    &nbsp; 탐지된 재료 없음
-                </div>
-                {% endif %}
-
+            <p id="status" style="text-align: center;"></p>
             <div id="detect">
             </div>
-                
-            {% elif file %}
-            <div>
-                <img src="{{ url_for('static', filename='upload/'+file+'.jpg') }}" height="400">
-            </div>
-            <div>
-                <button onclick="location.href='/yolo/detection?file={{file}}'">탐지 시작</button>
-            </div>
-            {% endif %}
         </div>
     </div>
 </body>
 <script>
     // 변수 선언
-    const detect_class = {{ (detect | default([])) | tojson }};
-    console.log(detect_class);
-    const filename = {{ (filename | default([])) | tojson }}; 
-    console.log(filename);
+    let filename = '';
+    let detect_class = ''
+    const det_item = document.getElementById('det_item');
     const detect_area = document.getElementById('detect');
-    let allTitles = [], allImgs = [], allIds = [];
-    let currentIndex = 0;       // 현재까지 화면에 노출된 항목 수
-    const ITEMS_PER_PAGE = 10;  // 한 번에 불러올 개수
-    let isLoading = false;       // 스크롤 중복 호출 방지 플래그
+    let video = ''
 
-    async function snapcook() {
-        try {
-            const response = await fetch('/api/snapcook', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({class: detect_class})
-            });
-            const data = await response.json();
-            console.log(data);
-
-            allTitles = data.result[0] || [];
-            allImgs = data.result[1] || [];
-            allIds = data.result[2] || [];
-
-            detect_area.innerHTML = '';
-            currentIndex = 0;
-
-            // 처음 15개 렌더링
-            renderNextBatch();
-
-            // 스크롤 이벤트 등록
-            window.addEventListener('scroll', handleScroll);
-        } catch (error) {
-            console.error('데이터를 불러오는 중 오류 발생:', error);
-        }
-    }
-
-    // 15개씩 받아와서 화면에 추가(append)하는 함수
-    function renderNextBatch() {
-        if (currentIndex >= allTitles.length) return;
-
-        const nextIndex = currentIndex + ITEMS_PER_PAGE;
-        const sliceTitles = allTitles.slice(currentIndex, nextIndex);
-
-        const html = sliceTitles.map((title, i) => {
-            const actualIndex = currentIndex + i;
-            const img = allImgs[actualIndex];
-            const id = allIds[actualIndex];
-
-            return `
-                <a href="/recipe/detail?id=${id}&file=${filename}" class="hover-row">
-                    <div class="menu-item">
-                        <img src="${img}" alt="${title}">
-                        <div>
-                            <h4 style="margin: 0 0 5px 0;">${title}</h4>
-                        </div>
-                    </div>
-                </a>
-            `;
-        }).join('');
-
-        // 기존 내역 지우지 않고 하단에 덧붙이기
-        detect_area.insertAdjacentHTML('beforeend', html);
-        currentIndex = nextIndex;
-        isLoading = false;
-    }
-
-    // 스크롤 감지 함수
-    function handleScroll() {
-        if (isLoading) return;
-
-        // 페이지 맨 아래 근처(100px 전)까지 스크롤했는지 확인
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-
-        if (scrollTop + windowHeight >= documentHeight - 100) {
-            if (currentIndex < allTitles.length) {
-                isLoading = true;
-                renderNextBatch();
+    function webCamStart(){
+        video = document.getElementById('webcam');
+    
+        // 1. 브라우저 웹캠 키기
+        const constraints = {
+            video: {
+                // 'user': 전면 카메라
+                // 'environment': 후면 카메라
+                facingMode: { ideal: 'environment' } // 후면 카메라를 가장 선호함
             }
-        }
+        };
+            
+        navigator.mediaDevices.getUserMedia(constraints)
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { console.error("웹캠 접근 실패:", err); });
+    }
+
+
+    // 2. 캡처 및 Flask 전송
+    async function captureAndUpload() {
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // 캔버스에 현재 영상 프레임 그리기
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+
+        // 캔버스 화면을 Blob 파일로 변환
+        canvas.toBlob(async (blob) => {
+            const formData = new FormData();
+            formData.append('file', blob, 'webcam_frame.jpg');
+
+            document.getElementById('status').innerText = "저장 중...";
+
+            // Flask 서버로 파일 전송
+            const res = await fetch('/save_img', {  
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (data){
+                filename= data.filename;
+                det_item.innerHTML = `
+                    <img src="{{ url_for('static', filename='/upload/') }}${filename}" width="200" height="300" style="border: 1px solid #ccc;">
+                    <br><br>
+                    <button onclick="reCapture()">재촬영</button>
+                    <button onclick="detection(filename)">탐지 시작</button>
+                `;
+                document.getElementById('status').innerText = `✅ 저장 완료: ${filename}`;
+            };
+        }, 'image/jpeg');
+    }
+
+    async function detection(filename){
+        console.log(filename);
+        const formData = new FormData();
+        formData.append('file', filename);
+        // Flask 서버로 파일 전송
+        document.getElementById('status').innerText = "탐지 중...";
+        const res = await fetch('/yolo/detection', {  
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ file: filename })
+        });
+
+        const data = await res.json();
+        console.log(data);
+        detect_class = data.detect;
+        det_item.innerHTML = `
+            <img src="{{ url_for('static', filename=('/result/res_')) }}${filename}" width="200" height="300" style="border: 1px solid #ccc;">
+            <br><br>
+            <button onclick="reCapture()">재촬영</button>
+            <form action="/detect" method="POST">
+                <input type="hidden" name="cls" value="${data.detect}">
+                <input type="hidden" name="file" value="${filename}">
+                <button type="submit">레시피 추천</button>
+            </form>
+        `;
+        document.getElementById('status').innerHTML = data.detect;
+    }
+
+    function reCapture(){
+        det_item.innerHTML = `
+            <video id="webcam" autoplay playsinline width="400" height="300" style="border: 1px solid #ccc;"></video>
+            <br><br>
+            <button type="button" onclick="captureAndUpload()">📸 사진 촬영 및 저장</button>
+        `;
+        webCamStart();
     }
 
     // DOM 로드 시 실행
-    if (detect_class && detect_class.length > 0) {
-        document.addEventListener('DOMContentLoaded', snapcook);
-    }
-
+    document.addEventListener('DOMContentLoaded', webCamStart);
 </script>
 </html>

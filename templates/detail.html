@@ -2,20 +2,33 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SnapCook_datail</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <style>
+            /* 중앙 정렬 및 여백 주기 */
+            html, body {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden; /* 가로 스크롤/짤림 완벽 방지 */
+                box-sizing: border-box;
+                font-family: sans-serif;
+            }
+        </style>
     </head>
     <body>
         <div>
             <div>
-                <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
+                <div style="font-size: 40px; padding-bottom: 10px; text-align: center;">&nbsp;SnapCook</div>
                 <header>
                     <div>
                         <nav>
-                            <div>
+                            <div class="nav-container">
                                 <a href="/" class="nav_link">Home</a>
                                 {% if filename %}
-                                <a href="/yolo/detection?file={{ filename }}" class="nav_link">Detection</a>
+                                <a href="#" class="nav_link" onclick="goDetect()">Detection</a>
                                 {% endif %}
                             </div>
                         </nav>
@@ -60,5 +73,32 @@
     </body>
     <script>
         const filename = {{ filename | tojson }};
+        const detect_class = {{ cls | tojson }};
+        console.log(detect_class);
+        function goDetect(){
+            cls = detect_class;
+            file = filename;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/detect';
+
+            // cls 파라미터 추가
+            const inputCls = document.createElement('input');
+            inputCls.type = 'hidden';
+            inputCls.name = 'cls';
+            inputCls.value = detect_class;
+            form.appendChild(inputCls);
+
+            // file 파라미터 추가
+            const inputFile = document.createElement('input');
+            inputFile.type = 'hidden';
+            inputFile.name = 'file';
+            inputFile.value = filename;
+            form.appendChild(inputFile);
+
+            // 폼 제출
+            document.body.appendChild(form);
+            form.submit();
+        }
     </script>
 </html>

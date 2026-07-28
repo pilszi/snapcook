@@ -2,12 +2,21 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SnapCook</title>   
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         <style>
+            html, body {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden; /* 가로 스크롤/짤림 완벽 방지 */
+                box-sizing: border-box;
+                font-family: sans-serif;
+            }
             #start {
                 display: block; /* 배경색과 패딩이 제대로 적용되도록 설정 */
-                text-align: center;
                 text-decoration: none;
                 font-size: 50px;
                 font-weight: bold;     /* h2 대신 글자를 굵게 처리 */
@@ -16,7 +25,8 @@
                 border-radius: 8px;    /* 모서리 라운딩 (선택) */
                 transition: all 0.2s ease;
                 margin-top: 20px;
-                width: 400px;          /* 버튼의 너비 지정 */
+                width: 90%;          /* 버튼의 너비 지정 */
+                max-width: 400px;
                 margin: 20px auto 0;
             }
             
@@ -29,7 +39,7 @@
     <body>
         <div>
             <div>
-                <div style="font-size: 40px; padding-bottom: 10px;">SnapCook</div>
+                <div style="font-size: 40px; padding-bottom: 10px; text-align: center;">&nbsp;SnapCook</div>
                 <header>
                     <div>
                         <nav>
@@ -37,9 +47,9 @@
                     </div>
                 </header>
             </div>
-            <div>
+            <div style="text-align: center;">
                 <a id="start" href="/main">
-                    SnapCook 시작!
+                    시작!
                 </a>
             </div>
         </div>

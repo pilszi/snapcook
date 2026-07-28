@@ -17,7 +17,7 @@ def detect_foods(cls):
 
     count_target = len(cls) # 2개
     bind_names = ', '.join(f":{i}" for i in range(count_target))
-
+    print(f'cls = {cls}==================')
     sql_b = f"""
     SELECT 
         name, image, id

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import requests
 
 
@@ -25,7 +25,7 @@ def main():
     return render_template("main.html")
 
 
-@app.route('/snapcook', methods=['POST'])
+@app.route('/save_img', methods=['POST'])
 def snapcook():
     file = request.files['file']
     filename = file.filename
@@ -33,30 +33,38 @@ def snapcook():
     file.save(f'{file_path}/{filename}')
     name, ext = file_split(filename)
 
-    return render_template('index.html',
-                           file = name)
+    return jsonify({"status": "success", "filename": filename})
 
 
-@app.route('/yolo/detection', methods=['GET'])
+@app.route('/yolo/detection', methods=['POST'])
 def yolo_detection():
-    filename = request.args.get('file')
-    # print(filename)
-    response = requests.get(f'{url}/yolo/detection?file={filename}')
+    file = request.json.get('file')
+    # filename = file.filename
+    print('='*60)
+    print(file)
+    response = requests.get(f'{url}/yolo/detection?file={file}')
     result = response.json()
     # print(result)
 
-    return render_template('index.html',
-                           filename = filename,
-                           detect = result)
+    return jsonify({"detect": result})
+
+
+@app.route('/detect', methods=['POST'])
+def detect():
+    cls = request.form.get('cls')
+    cls_list = [item.strip() for item in cls.split(',')]
+    file = request.form.get('file')
+    print(file)
+    print('='*60)
+    return render_template('detect.html',
+                           detect = cls_list,
+                           filename = file)
 
 
 @app.route('/api/snapcook', methods=['POST'])
 def api_snapcook():
-    req = request.get_json()
-    data = req.get('class')
-    print('='*60)
-    print(data)
-    response = requests.post(f'{url}/snapcook', json={'class': data})
+    data = request.json.get('class', '')
+    response = requests.post(f'{url}/api/snapcook', json={'class': data})
     result = response.json()
     print(f'추천 요리 갯수 : {len(result)}')
 
@@ -67,6 +75,7 @@ def api_snapcook():
 def recipe_detail():
     id = request.args.get('id')
     filename = request.args.get('file')
+    cls = request.args.get('cls')
     response = requests.get(f'{url}/recipe/detail?id={id}')
     result = response.json()
     print(result)
@@ -76,7 +85,8 @@ def recipe_detail():
     return render_template('detail.html',
                            filename = filename,
                            result = res,
-                           food = food_res)
+                           food = food_res,
+                           cls = cls)
 
 # -------------------  진행 중  ---------------------
 

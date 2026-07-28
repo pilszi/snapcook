@@ -10,19 +10,19 @@ app = FastAPI()
 @app.get('/yolo/detection')
 def detection(file:str):
 
+    print(f'detection file = {file}')
     det_class = detect_img(file)
     # print(det_class)
-    print(det_class)
+    print(f'result class = {det_class}')
     kor_class = [ing_names[x] for x in det_class]
 
     return kor_class
 
 
-@app.post('/snapcook')
+@app.post('/api/snapcook')
 def snapcook(data:dict):
-    
-    print('='*60)
-    print(data['class'])
+
+    print(f'snapcook data = {data}')
     res = detect_foods(data['class'])
     
     return res
@@ -32,6 +32,6 @@ def snapcook(data:dict):
 def detail(id:int):
     
     result, food_res = recipe_detail(id)
-    print(result)
+    print(f'detail_recipe = {food_res}')
 
     return {'result': result, 'food': food_res}

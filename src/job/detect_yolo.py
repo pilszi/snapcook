@@ -21,7 +21,7 @@ def detect_img(file):
     """
     model = YOLO(model_path)
     print(file)
-    img_path = f'{upload_path}/{file}.jpg'
+    img_path = f'{upload_path}/{file}'
     print(img_path)
     img = cv2.imread(img_path)
 
@@ -43,7 +43,7 @@ def detect_img(file):
     res_rgb = cv2.cvtColor(res_plot, cv2.COLOR_BGR2RGB)
     plt.imshow(res_rgb)
     plt.axis("off")
-    plt.savefig(f"{result_path}/res_{file}.jpg", transparent = True, bbox_inches='tight', dpi=300)
+    plt.savefig(f"{result_path}/res_{file}", transparent = True, bbox_inches='tight', dpi=300)
     # plt.show()
     plt.close()
 
