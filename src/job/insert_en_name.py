@@ -43,7 +43,11 @@ print("-- DB 실행용 INSERT SQL --")
 for en_name, kr_list in vegetables_korean_map.items():
     for kr_name in kr_list:
         # print(en_name+ ' / '+ kr_name)
-        cur.execute("SELECT COUNT(*) FROM ing_name WHERE en_name=:en_name", {'en_name':en_name})
+        sql_s = """SELECT 
+            count(*) 
+        FROM ing_name ig JOIN ingredients i ON ig.ing_id=i.id 
+            WHERE i.name = :1"""
+        cur.execute(sql_s, [kr_name])
         row = cur.fetchone()
         # print(row[0])
         if row[0] == 0:
