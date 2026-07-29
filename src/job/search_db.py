@@ -1,12 +1,15 @@
 from static.oracle.db import connect
 
-ing_names = None
+ing_names = {}
 
 try:
     cur = connect().cursor()
     cur.execute("""SELECT i.name, ig.en_name FROM ing_name ig JOIN ingredients i ON i.id = ig.ing_id""")
     ing_res = cur.fetchall()
-    ing_names = {res[1]: res[0] for res in ing_res}
+    for kr_name, en_name in ing_res:
+        if en_name not in ing_names:
+            ing_names[en_name] = []
+        ing_names[en_name].append(kr_name)
     cur.close()
     print(ing_names)
 except Exception as e:
