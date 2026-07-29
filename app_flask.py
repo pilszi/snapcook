@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Flask, render_template, request, jsonify
 import requests
 
@@ -14,7 +15,9 @@ def file_split(filename):
     print(f' ==== {filename} 확장자 분리 ====')
     name = os.path.splitext(filename)[0]
     ext = os.path.splitext(filename)[1]
-    return name, ext
+    uu_num = uuid.uuid4().hex[:6]
+    file = f'{name}_{uu_num}'
+    return file, ext
 
 @app.route('/')
 def index():
@@ -30,10 +33,10 @@ def snapcook():
     file = request.files['file']
     filename = file.filename
     print(filename)
-    file.save(f'{file_path}/{filename}')
     name, ext = file_split(filename)
+    file.save(f'{file_path}/{name}{ext}')
 
-    return jsonify({"status": "success", "filename": filename})
+    return jsonify({"status": "success", "filename": f'{name}{ext}'})
 
 
 @app.route('/yolo/detection', methods=['POST'])
@@ -63,7 +66,7 @@ def detect():
 
 @app.route('/api/snapcook', methods=['POST'])
 def api_snapcook():
-    data = request.json.get('class', '')
+    data = request.json.get('class')
     response = requests.post(f'{url}/api/snapcook', json={'class': data})
     result = response.json()
     print(f'추천 요리 갯수 : {len(result)}')

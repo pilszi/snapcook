@@ -38,6 +38,12 @@ for link in link_elems:
             food_recipe['image'] = soup.find("meta", property="og:image").get('content', "")
             food_recipe['title'] = recipe_info['title']
             ingredients = recipe_info['recipe_igroups']
+            if recipe_info['level'] == 1:
+                food_recipe['level'] = '초급'
+            elif recipe_info['level'] == 2:
+                food_recipe['level'] = '중급'
+            else:
+                food_recipe['level'] = '고급'
             name = ''
             value = ''
             group = []
@@ -90,8 +96,8 @@ for link in link_elems:
                     print(f"{food_recipe['title']} 은 이미 저장 되었습니다.")
                 else:
                     food_id_var = cur.var(int)  
-                    sql = """INSERT INTO food(name, image)VALUES(:1, :2) RETURNING id INTO :3"""
-                    cur.execute(sql, [food_recipe['title'], food_recipe['image'], food_id_var])
+                    sql = """INSERT INTO food(name, image, food_level)VALUES(:1, :2, :3) RETURNING id INTO :4"""
+                    cur.execute(sql, [food_recipe['title'], food_recipe['image'], food_recipe['level'], food_id_var])
                     food_id = food_id_var.getvalue()[0]
                 # print(food_id)
                 
@@ -104,31 +110,33 @@ for link in link_elems:
                         # print(f"{items['step_num']}단계")
                         cur.execute(sql, [food_id, items['step_num'], items['text'], items['image']])
 
-                ingredient_id = ''
+                ing_id = ''
                 for item in food_recipe['ingredients']:
                     # print(food_recipe['ingredients'][i][0])
                     cur.execute("""SELECT id FROM ingredients WHERE name = :1""", [item[0],])
                     ing_result = cur.fetchone()
                     if ing_result is not None:
-                        ingredient_id = ing_result[0]
+                        ing_id = ing_result[0]
                     else:
-                        ingredient_id_var = cur.var(int)
+                        ing_id_var = cur.var(int)
                         sql = "INSERT INTO ingredients(name)VALUES(:1) RETURNING id INTO :2"
-                        cur.execute(sql, [item[0], ingredient_id_var])
-                        ingredient_id = ingredient_id_var.getvalue()[0]
-                    # print(ingredient_id)
+                        cur.execute(sql, [item[0], ing_id_var])
+                        ing_id = ing_id_var.getvalue()[0]
+                    # print(ing_id)
 
-                    cur.execute("""SELECT count(*) FROM basic_ingredients WHERE food_id = :1 AND ingredient_id = :2""", [food_id, ingredient_id])
+                    cur.execute("""SELECT count(*) FROM basic_ing WHERE food_id = :1 AND ing_id = :2""", [food_id, ing_id])
                     basic_result = cur.fetchone()
                     if basic_result[0] == 0:
-                        sql = """INSERT INTO basic_ingredients(food_id, ingredient_id, value)VALUES(:1, :2, :3)"""
-                        cur.execute(sql, [food_id, ingredient_id, item[1]])  
+                        sql = """INSERT INTO basic_ing(food_id, ing_id, value)VALUES(:1, :2, :3)"""
+                        cur.execute(sql, [food_id, ing_id, item[1]])  
 
                 conn.commit()
                 print(f"==== {food_recipe['title']} DB 저장 완료 ====")
                 print("=" * 60)
             except Exception as e:
-                conn.rollback()
+                sql = "INSERT INTO fail_link(link)VALUES(:1)"
+                cur.execute(sql, [link[0]])
+                conn.commit()
                 print(f"에러 발생으로 DB 저장 건너 뜁니다({link[0]}) : {e}")
             
         except KeyError as e:
