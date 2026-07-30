@@ -69,7 +69,7 @@ def api_snapcook():
     data = request.json.get('class')
     response = requests.post(f'{url}/api/snapcook', json={'class': data})
     result = response.json()
-    print(f'추천 요리 갯수 : {len(result)}')
+    print(f'추천 요리 갯수 : {len(result[0])}')
 
     return {'result': result}
 

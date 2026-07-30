@@ -25,23 +25,24 @@ def detect_foods(cls):
         f.name, 
         f.image, 
         f.id,
+        f.food_level,
         COUNT(DISTINCT i.id) AS match_count
     FROM food f
         JOIN basic_ing b ON f.id = b.food_id
         JOIN ingredients i ON i.id = b.ing_id
-            WHERE i.name IN ({bind_names})
-            GROUP BY f.id, f.name, f.image
+            WHERE REGEXP_LIKE(i.name, :1)
+            GROUP BY f.id, f.name, f.image, f.food_level
             ORDER BY match_count DESC, f.name ASC
-            FETCH FIRST 10 ROWS ONLY
     """
     with connect().cursor() as cur:
-        cur.execute(sql_b, cls)   
+        cur.execute(sql_b, ['|'.join(cls)]) 
         res = cur.fetchall()
     title = [r[0] for r in res]
     img = [r[1] for r in res]
     ids = [r[2] for r in res]
+    levels = [r[3] for r in res]
     print(f'title = {title} / ids = {ids}')
-    return title, img, ids
+    return title, img, ids, levels
 
 
 def recipe_detail(id:int):
@@ -91,3 +92,12 @@ def recipe_detail(id:int):
     result = [ingredient, values, steps, text, recipe_img]
 
     return result, food_res
+
+def kor_class(det_class):
+
+    kr_name = []
+    for cls in det_class:
+        # print(ing_names[cls])
+        for item in ing_names[cls]:
+            kr_name.append(item)
+    return kr_name

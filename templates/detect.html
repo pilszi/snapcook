@@ -16,6 +16,26 @@
                 box-sizing: border-box;
                 font-family: sans-serif;
             }
+
+            #align_btn button {
+                padding: 15px; 
+                font-size: 15px; 
+                font-weight: bold;
+                border: none; 
+                border-radius: 8px; 
+                margin: 10px auto;
+                cursor: pointer;
+                display: inline-block;
+            }
+
+            #align_btn button:hover {
+                background-color: #2b5797;
+                color: #eee;
+            }
+
+            #align_btn {
+                text-align: center;
+            }
         </style>
     </head>
     <body>
@@ -35,6 +55,12 @@
                     </div>
                 </header>
             </div>
+            <div id="align_btn">
+                <button onclick="align('all')">전체보기</button>
+                <button onclick="align('1')" name="초급">초급</button>
+                <button onclick="align('2')" name="중급">중급</button>
+                <button onclick="align('3')" name="고급">고급</button>
+            </div>
             <div>
                 <p id="length" style="font-size: 20px;"></p>
                 <div id="detect">
@@ -49,10 +75,13 @@
         const filename = {{ filename | tojson }};
         console.log(filename);
         const detect_area = document.getElementById('detect');
-        let allTitles = [], allImgs = [], allIds = [];
+        let all_titles = [], all_imgs = [], all_ids = []; all_levels = [];
         let currentIndex = 0;       // 현재까지 화면에 노출된 항목 수
         const ITEMS_PER_PAGE = 10;  // 한 번에 불러올 개수
         let isLoading = false;       // 스크롤 중복 호출 방지 플래그
+        let currentLevelFilter = 'all';
+        let filteredIndices = [];  
+
 
         async function snapcook() {
             try {
@@ -66,16 +95,19 @@
                 const data = await response.json();
                 console.log(data);
 
-                allTitles = data.result[0] || [];
-                allImgs = data.result[1] || [];
-                allIds = data.result[2] || [];
+                all_titles = data.result[0] || [];
+                all_imgs = data.result[1] || [];
+                all_ids = data.result[2] || [];
+                all_levels = data.result[3] || [];
+                // console.log(all_levels);
 
-                document.getElementById('length').innerHTML = `&nbsp;&nbsp;총 ${allIds.length}개의 레시피`;
+                document.getElementById('length').innerHTML = `&nbsp;&nbsp;총 ${all_ids.length}개의 레시피`;
                 detect_area.innerHTML = '';
                 currentIndex = 0;
 
                 // 처음 15개 렌더링
-                renderNextBatch();
+                align('all')
+                // renderNextBatch();
 
                 // 스크롤 이벤트 등록
                 window.addEventListener('scroll', handleScroll);
@@ -86,15 +118,24 @@
 
         // 15개씩 받아와서 화면에 추가(append)하는 함수
         function renderNextBatch() {
-            if (currentIndex >= allTitles.length) return;
+            if (currentIndex >= filteredIndices.length) {
+                console.log("더 이상 렌더링할 데이터가 없습니다.");
+                return;}
 
             const nextIndex = currentIndex + ITEMS_PER_PAGE;
-            const sliceTitles = allTitles.slice(currentIndex, nextIndex);
-
-            const html = sliceTitles.map((title, i) => {
-                const actualIndex = currentIndex + i;
-                const img = allImgs[actualIndex];
-                const id = allIds[actualIndex];
+            
+            // 1. 변수명 통일 (sliceIndices)
+            const sliceIndices = filteredIndices.slice(currentIndex, nextIndex);
+            
+            const html = sliceIndices.map(actualIndex => {
+                const title = all_titles[actualIndex];
+                const img = all_imgs[actualIndex];
+                const id = all_ids[actualIndex];
+                const level = all_levels[actualIndex];
+                let lvl = '';
+                if (String(level) === '1') lvl = '초급';
+                else if (String(level) === '2') lvl = '중급';
+                else lvl = '고급';
 
                 return `
                     <a href="/recipe/detail?id=${id}&file=${filename}&cls=${detect_class}" class="hover-row">
@@ -102,6 +143,7 @@
                             <img src="${img}" alt="${title}">
                             <div>
                                 <h4 style="margin: 0 0 5px 0;">${title}</h4>
+                                <span>난이도: ${lvl}</span>
                             </div>
                         </div>
                     </a>
@@ -124,7 +166,7 @@
             const documentHeight = document.documentElement.scrollHeight;
 
             if (scrollTop + windowHeight >= documentHeight - 100) {
-                if (currentIndex < allTitles.length) {
+                if (currentIndex < all_titles.length) {
                     isLoading = true;
                     renderNextBatch();
                 }
@@ -155,6 +197,24 @@
             // 폼 제출
             document.body.appendChild(form);
             form.submit();
+        }
+
+        function align(lvl) {
+            currentLevelFilter = lvl; // 현재 필터 상태 저장
+            
+            // 원본 데이터(all_levels)에서 선택한 난이도에 해당하는 인덱스만 추출
+            filteredIndices = [];
+            all_levels.forEach((level, idx) => {
+                if (lvl === 'all' || String(level) === String(lvl)) {
+                    filteredIndices.push(idx);
+                }
+            });
+
+            console.log("필터링된 데이터 개수:", filteredIndices.length);
+            // 화면 및 인덱스 초기화 후 첫 번째 배치 렌더링
+            detect_area.innerHTML = '';
+            currentIndex = 0;
+            renderNextBatch();
         }
 
         // DOM 로드 시 실행

@@ -38,12 +38,7 @@ for link in link_elems:
             food_recipe['image'] = soup.find("meta", property="og:image").get('content', "")
             food_recipe['title'] = recipe_info['title']
             ingredients = recipe_info['recipe_igroups']
-            if recipe_info['level'] == 1:
-                food_recipe['level'] = '초급'
-            elif recipe_info['level'] == 2:
-                food_recipe['level'] = '중급'
-            else:
-                food_recipe['level'] = '고급'
+            food_recipe['level'] = recipe_info['level']
             name = ''
             value = ''
             group = []

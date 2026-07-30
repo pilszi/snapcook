@@ -120,8 +120,8 @@
                 det_item.innerHTML = `
                     <img src="{{ url_for('static', filename='/upload/') }}${filename}" width="200" height="300" style="border: 1px solid #ccc;">
                     <br><br>
-                    <button onclick="reCapture()">재촬영</button>
                     <button onclick="detection(filename)">탐지 시작</button>
+                    <button onclick="reCapture()">재촬영</button>
                 `;
                 document.getElementById('status').innerText = `✅ 저장 완료: ${filename}`;
             };
@@ -148,21 +148,22 @@
         det_item.innerHTML = `
             <img src="{{ url_for('static', filename=('/result/res_')) }}${filename}" width="200" height="300" style="border: 1px solid #ccc;">
             <br><br>
-            <button onclick="reCapture()">재촬영</button>
             <form action="/detect" method="POST">
                 <input type="hidden" name="cls" value="${data.detect}">
                 <input type="hidden" name="file" value="${filename}">
                 <button type="submit">레시피 추천</button>
             </form>
+            <button onclick="reCapture()">재촬영</button>
         `;
         document.getElementById('status').innerHTML = data.detect;
     }
 
     function reCapture(){
+        document.getElementById('status').innerText = '';
         det_item.innerHTML = `
             <video id="webcam" autoplay playsinline width="400" height="300" style="border: 1px solid #ccc;"></video>
             <br><br>
-            <button type="button" onclick="captureAndUpload()">📸 사진 촬영 및 저장</button>
+            <button onclick="captureAndUpload()">📸 사진 촬영 및 저장</button>
         `;
         webCamStart();
     }

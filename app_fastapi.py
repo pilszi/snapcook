@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from static.oracle.db import connect
 from src.job.detect_yolo import detect_img
-from src.job.search_db import detect_foods, ing_names, recipe_detail
+from src.job.search_db import detect_foods, ing_names, recipe_detail, kor_class
 
 app = FastAPI()
 
@@ -14,9 +14,9 @@ def detection(file:str):
     det_class = detect_img(file)
     # print(det_class)
     print(f'result class = {det_class}')
-    kor_class = [ing_names[x] for x in det_class]
+    kr_name = kor_class(det_class)
 
-    return kor_class
+    return kr_name
 
 
 @app.post('/api/snapcook')
