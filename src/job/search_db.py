@@ -98,6 +98,7 @@ def kor_class(det_class):
     kr_name = []
     for cls in det_class:
         # print(ing_names[cls])
-        for item in ing_names[cls]:
-            kr_name.append(item)
+        if cls in ing_names:
+            for item in ing_names[cls]:
+                kr_name.append(item)
     return kr_name

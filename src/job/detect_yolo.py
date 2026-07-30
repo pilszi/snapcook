@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 upload_path = 'static/upload'
 result_path = "static/result"
-model_path = "model/Cv3_best.pt"
+model_path = "model/v10_best.pt"
 
 PATH = [upload_path, result_path]
 for path in PATH:
@@ -25,7 +25,7 @@ def detect_img(file):
     print(img_path)
     img = cv2.imread(img_path)
 
-    result = model.predict(source=img_path, conf=0.1)
+    result = model.predict(source=img_path, conf=0.05)
 
     names = result[0].names
     print(names)
