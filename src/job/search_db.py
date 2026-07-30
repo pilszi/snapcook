@@ -93,6 +93,8 @@ def recipe_detail(id:int):
 
     return result, food_res
 
+
+
 def kor_class(det_class):
 
     kr_name = []
