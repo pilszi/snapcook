@@ -24,7 +24,7 @@ vegetables_korean_map = {
     'paprika': ['피망', '파프리카'],
     'potato': ['감자'],
     'radish': ['무'],
-    'squash': ['호박'],
+    'squash': ['호박', '주키니'],
     'beans': ['콩', '서리태'],
     'beetroot': ['비트'],
     'cauliflower': ['콜리플라워'],

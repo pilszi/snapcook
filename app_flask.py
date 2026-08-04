@@ -45,7 +45,7 @@ def yolo_detection():
     # filename = file.filename
     print('='*60)
     print(file)
-    response = requests.get(f'{url}/yolo/detection?file={file}')
+    response = requests.get(f'{url}/api/yolo/detection?file={file}')
     result = response.json()
     # print(result)
 
@@ -79,8 +79,9 @@ def recipe_detail():
     id = request.args.get('id')
     filename = request.args.get('file')
     cls = request.args.get('cls')
-    response = requests.get(f'{url}/recipe/detail?id={id}')
+    response = requests.get(f'{url}/api/recipe/detail?id={id}')
     result = response.json()
+    print('='*60)
     print(result)
     res = result['result']
     food_res = result['food']

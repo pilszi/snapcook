@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 upload_path = 'static/upload'
 result_path = "static/result"
-model_path = "model/v10_best.pt"
+model_path = "model/v10m_best.pt"
 
 PATH = [upload_path, result_path]
 for path in PATH:

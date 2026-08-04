@@ -10,6 +10,7 @@ import requests
 import json
 from static.oracle.db import connect
 import time
+import re
 
 conn = connect()
 
@@ -46,9 +47,11 @@ for link in link_elems:
                 # print(items)
                 for item in items['ingredients']:
                     # print(item)
-                    name = item['name'].strip()
+                    cleaned_name = re.sub(r'\(.*?\)', '', item['name']).replace(')', '').strip()
+                    names = [n.strip() for n in cleaned_name.split(',') if n.strip()]
+                    # name = item['name'].strip()
                     value = item['value'].strip()
-                    group.append([name, value])
+                    group.extend([[n,value] for n in names])
             food_recipe['ingredients'] = group
             # print(f"{title} / {group}")
             steps = recipe_info['recipe_steps']

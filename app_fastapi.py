@@ -7,7 +7,7 @@ from src.job.search_db import detect_foods, ing_names, recipe_detail, kor_class
 app = FastAPI()
 
 
-@app.get('/yolo/detection')
+@app.get('/api/yolo/detection')
 def detection(file:str):
 
     print(f'detection file = {file}')
@@ -28,7 +28,7 @@ def snapcook(data:dict):
     return res
 
 
-@app.get('/recipe/detail')
+@app.get('/api/recipe/detail')
 def detail(id:int):
     
     result, food_res = recipe_detail(id)
